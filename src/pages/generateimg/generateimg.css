@@ -1,0 +1,83 @@
+.genimg-boxtext{
+    align-self: flex-start;
+    padding-left: 30px;
+    margin-top: 30px;
+    
+}
+
+.genimg-box{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: white;
+    width: 280px;
+    height: 150px;
+    border: solid 5px black;
+    border-radius: 20px;
+    margin-top: 15px;
+    margin-bottom: 0px;
+}
+
+.genimg-slider{
+    width: 280px;
+}
+
+.slider{
+    width: 100%;
+    background: #F4A918;
+    
+}
+
+.slider-val{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    
+}
+
+.slider-val p{
+    margin-top: 0;
+}
+
+.genimg-dist{
+    
+    width: 280px;
+    margin-top: 10px;
+}
+
+.genimg-dist h2{
+    margin-top: -15px;
+    margin-bottom: 0;
+    
+}
+
+.genimg-bite{
+    width: 280px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    
+    
+}
+
+.genimg-bite-row{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.genimg-bite-box{
+    background-color: #FFDC97;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    border: solid 1px black;
+}
+
+.genimg-bite-box p{
+    font-weight: 500;
+}
+

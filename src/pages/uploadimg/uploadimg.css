@@ -1,0 +1,55 @@
+.upload-main{
+    font-family: var(--font-family);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 360px;
+    height: 800px;
+    
+}
+
+.upload-img{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 30px;
+}
+
+.back{
+    position: absolute;
+    left: 30px;
+}
+
+.upload-tips-box{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 285px;
+    height: 220px;
+    background-color: white;
+    border: solid 5px black;
+    border-radius: 20px;
+    margin-top: 130px;
+    margin-bottom: 20px;
+}
+
+.tips-icon{
+    position: relative;
+    top:-35px;
+}
+
+.upload-tips-text{
+    margin-top: -10px;
+}
+
+ul li{
+    margin-bottom:10px;
+    font-weight: 600;
+
+}
+
+
+
+

@@ -1,0 +1,4 @@
+export { default as KeySelect } from './keyselect/Keyselect';
+export { default as UploadImg } from './uploadimg/Uploadimg';
+export { default as GenerateImg } from './generateimg/Generateimg';
+export { default as UploadImg2 } from './uploadimg2/Uploadimg2';

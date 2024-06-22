@@ -1,0 +1,45 @@
+.button-main{
+    background-color: #FFCA64;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    width: 260px;
+    height: 60px;
+    border-radius: 100px;
+    border: solid 5px black;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin: 10px;
+}
+
+.button-icon{
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    margin: 0;
+}
+
+.button-icon-img-1{
+    margin-right: -15px;
+    opacity: 20%;
+}
+
+.button-icon-img-2{
+    margin-right: -15px;
+    opacity: 40%;
+}
+.button-icon-img-3{
+    margin-right: -15px;
+    opacity: 60%;
+}
+.button-icon-img-4{
+    margin-right: -15px;
+    opacity: 80%;
+    
+}
+
+.button-text p{
+    font-weight: 700;
+
+}

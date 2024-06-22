@@ -1,0 +1,50 @@
+.upload-main{
+    font-family: var(--font-family);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 360px;
+    height: 800px;
+    
+}
+
+.upload-img{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 30px;
+}
+
+.back{
+    position: absolute;
+    left: 30px;
+    top: 30px;
+}
+
+.upload-box2{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: white;
+    width: 280px;
+    height: 400px;
+    border: solid 5px black;
+    border-radius: 20px;
+    margin-top: 80px;
+    margin-bottom: 0px;
+}
+
+.upload-box2-icon{
+    position: relative;
+    top:-30px;
+}
+
+.select-buttons2{
+    display: flex;
+    flex-direction: column;
+    margin-top: 30px;
+    align-items: flex-start;
+}
+

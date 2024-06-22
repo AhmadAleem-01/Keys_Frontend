@@ -1,25 +1,21 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import { KeySelect, GenerateImg, UploadImg, UploadImg2 } from './pages';
+import { BrowserRouter, Routes, Route} from 'react-router-dom';
+import './app.css'
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='app'>
+      <BrowserRouter>
+        <Routes>
+          <Route path='/' element={<KeySelect />} />
+          <Route path='/genimg' element={<GenerateImg />} />
+          <Route path='/upimg' element={<UploadImg />} />
+          <Route path='/upimg2' element={<UploadImg2 />} />
+        </Routes>
+      </BrowserRouter>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
