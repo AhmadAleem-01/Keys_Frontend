@@ -18,13 +18,13 @@ const Keyselect = () => {
         <div className='select-text'>
             <img className='select-text-img' src={Key} alt='key' />
             <h2>Welcome To</h2>
-            <h1>Keys & Shit</h1>
+            <h1>Keys Project</h1>
         </div>
 
         <div className='select-buttons'>
             <p>Select Keys</p>
-            <Link to='/upimg' className='linking'><Button icon={Mortice} text="Mortice Key" onClick={()=>{}}/></Link>
-            <Link to='/upimg' className='linking'><Button icon={Cylinderical} text="Cylinderical Key" onClick={()=>{}}/></Link>
+            <Link to='/keymodel' className='linking'><Button icon={Mortice} text="Mortice Key" onClick={()=>{}}/></Link>
+            <Link to='/keymodel' className='linking'><Button icon={Cylinderical} text="Cylinderical Key" onClick={()=>{}}/></Link>
         </div>
 
 
