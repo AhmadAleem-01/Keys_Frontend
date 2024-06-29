@@ -16,7 +16,7 @@ const KeyModelSelect = () => {
     const fetchData = (value) => {
         fetch("https://keys-backend.vercel.app/getReferenceNumber").then((response) => response.json()).then((json) => {
             const results = json.filter((variant) => {
-                return variant && variant.Reference_Number && variant.Reference_Number.toLowerCase().includes(value);
+                return value && variant && variant.Reference_Number && variant.Reference_Number.toLowerCase().includes(value.toLowerCase());
             });
             setVariants(results);
             
