@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React,{useState, useEffect} from "react";
 import "./keyModelSelect.css";
 import Header from "../../assets/1outof3.svg";
 import Button from "../../components/button/Button";
@@ -7,25 +7,30 @@ import { Link } from "react-router-dom";
 import Proceed from '../../assets/proceed.svg';
 import Search from '../../assets/search.svg';
 import ImgDisplay from '../../assets/displayimg.svg'
+import axios from 'axios';
 
 
 const KeyModelSelect = () => {
     const [input,setInput] = useState("");
     const [variants, setVariants] = useState([]);
 
-    const fetchData = (value) => {
-        fetch("https://keys-backend.vercel.app/getReferenceNumber").then((response) => response.json()).then((json) => {
-            const results = json.filter((variant) => {
-                return value && variant && variant.Reference_Number && variant.Reference_Number.toLowerCase().includes(value.toLowerCase());
-            });
-            setVariants(results);
-            
-        }); 
-    }
+    useEffect(() => {
+      const fetchData = async () => {
+        const response = await axios.get('https://keys-backend.vercel.app/getReferenceNumber');
+        const results = response.data.filter((variant) => {
+          if (!input) {
+            return true; // show all data if input is empty
+          }
+          return variant && variant.Reference_Number && variant.Reference_Number.toLowerCase().includes(input.toLowerCase());
+        });
+        setVariants(results);
+      }
+      fetchData();
+    },[input]);
 
     const handleChange = (value) => {
         setInput(value);
-        fetchData(value);
+        // fetchData(value);
     }
   return (
     <div className="select-main">
