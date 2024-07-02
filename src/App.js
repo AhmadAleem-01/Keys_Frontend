@@ -1,7 +1,7 @@
 import React from 'react'
 import { KeySelect, GenerateImg, UploadImg, UploadImg2, KeyModel } from './pages';
 import { BrowserRouter, Routes, Route} from 'react-router-dom';
-import './app.css'
+import './App.css'
 
 const App = () => {
   return (

@@ -53,7 +53,7 @@ const KeyModelSelect = () => {
         <div className="model-dropdown-items">
             {
                 variants.map((variant) => {
-                    return <Link to='/upimg' className='linking'>
+                    return <Link to={`/upimg#${variant.Reference_Number}`} className='linking'>
                             <div className="model-dropdown-item" onClick={() => {}}>
                                 <p>{variant.Reference_Number}</p>
                             </div>

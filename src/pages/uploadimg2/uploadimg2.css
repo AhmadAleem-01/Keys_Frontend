@@ -48,3 +48,50 @@
     align-items: flex-start;
 }
 
+.video-feed {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 15px;
+}  
+
+.upload-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .upload-img {
+    margin-bottom: 20px;
+  }
+  
+  .upload-box2 {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+  }
+  
+  .canvas-overlay {
+    position: absolute;
+    top: 0;
+    width: 280px;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 15px;
+    display: none;
+  }
+  
+  .select-buttons2 {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .video-canvas {
+    position: absolute;
+    pointer-events: none;
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+  

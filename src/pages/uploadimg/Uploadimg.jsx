@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 
 
 const Uploadimg = () => {
+  const hash = window.location.hash;
   return (
     <div className='upload-main'>
       <div className='upload-img'>
@@ -27,7 +28,7 @@ const Uploadimg = () => {
         </ul>
       </div>
 
-      <Link to='/upimg2' className='linking'><Button icon={Photo} text="Take Photo" onClick={()=>{}}/></Link>
+      <Link to={`/upimg2${hash}`} className='linking'><Button icon={Photo} text="Take Photo" onClick={()=>{}}/></Link>
 
     </div>
   )
