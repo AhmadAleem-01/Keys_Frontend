@@ -52,8 +52,8 @@ const Uploadimg2 = () => {
       };
 
       if (keyData.hasVariant) {
-        const newShoulderDistances = keyData.Shoulder_Distance.map(variant => updateShoulderDistance(variant));
-        setShoulderDistance(newShoulderDistances);
+        const newShoulderDistance = updateShoulderDistance(keyData.Shoulder_Distance[0]);
+        setShoulderDistance(newShoulderDistance);
       } else {
         const newShoulderDistance = updateShoulderDistance(keyData.Shoulder_Distance);
         setShoulderDistance(newShoulderDistance);
@@ -92,8 +92,27 @@ const Uploadimg2 = () => {
 
       context.stroke();
 
+      // Draw green lines horizontally from the red lines
+      context.beginPath();
+      context.strokeStyle = 'green';
+      context.lineWidth = 2;
+
+      context.moveTo(x1, canvas.height * 0.1);
+      context.lineTo(x1 - 20, canvas.height * 0.1); // Green line to the left of the first red line
+      context.moveTo(x2, canvas.height * 0.1);
+      context.lineTo(x2 + 20, canvas.height * 0.1); // Green line to the right of the second red line
+
+      context.stroke();
+
       if (keyData) {
-        const depths = keyData.Depth.split(',').map(d => parseInt(d, 10) * dpi / 1000);
+        let depths
+        if (keyData.hasVariant){
+          depths = keyData.Depth.map(d => d.split(',').map(d => parseInt(d, 10) * dpi / 1000)).flat();
+          depths = depths.filter((value, index) => depths.indexOf(value) === index);
+          console.log(depths, "depths");
+        } else {
+          depths = keyData.Depth.split(',').map(d => parseInt(d, 10) * dpi / 1000);
+        }
         const shoulders = shoulderDistance.map(d => parseInt(d, 10) * dpi / 1000);
 
         context.strokeStyle = 'rgba(0, 0, 255, 0.5)';
@@ -108,7 +127,7 @@ const Uploadimg2 = () => {
         shoulders.forEach(shoulder => {
           const y = shoulder + (canvas.height * 0.1);
           context.moveTo(0, y);
-          context.lineTo(canvas.width * .8, y);
+          context.lineTo(canvas.width * 0.8, y);
         });
 
         context.stroke();
@@ -139,10 +158,17 @@ const Uploadimg2 = () => {
 
                 markedLines.add(shoulder);
 
-                const index = depths.indexOf(depth);
-                newDetectedEdges.push({ edge: y, decoding: keyData.Decoding.split(',')[index] });
-
-                break;
+                if (!keyData.hasVariant){
+                  const index = depths.indexOf(depth);
+                  newDetectedEdges.push({ edge: y, decoding: keyData.Decoding.split(',')[index] });
+                  break;
+                } else {
+                  const tempArray = keyData.Decoding.map(d => d.split(',')).flat();
+                  const decodings = tempArray.filter((value, index) => tempArray.indexOf(value) === index);
+                  const index = depths.indexOf(depth);
+                  newDetectedEdges.push({ edge: y, decoding: decodings[index] });
+                  break;
+                }
               }
             }
           }
@@ -177,15 +203,15 @@ const Uploadimg2 = () => {
       <div className='select-buttons2'>
         <p>Is this fine?</p>
         <Link to={`/upimg#${data}`} className='linking'><Button icon={Photo} text="Retake Photo" onClick={() => {}} /></Link>
-        <Link to='/genimg' className='linking'><Button icon={Proceed} text="Proceed" onClick={() => {}} color='#FFFFFF' /></Link>
+        <Link to={`/genimg#${data}`} className='linking'><Button icon={Proceed} text="Proceed" onClick={() => {}} color='#FFFFFF' /></Link>
       </div>
 
       <div className='detected-edges'>
         {detectedEdges.length > 0 && (
           <p>
-            Detected Edges and Decodings:
+            Decodings:
             {detectedEdges.map((edge, index) => (
-              <span key={index}> Edge: {edge.edge}, Decoding: {edge.decoding} </span>
+              <span key={index}> {edge.decoding} </span>
             ))}
           </p>
         )}
