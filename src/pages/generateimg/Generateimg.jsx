@@ -65,9 +65,9 @@ const Generateimg = () => {
           </div>
         </div>
       </div>
-
-      <Link to='/upimg2'><Button icon={Photo} text="Retake Photo" onClick={()=>{}} /></Link>
-
+      <div className='genimg-buttons'>
+        <Link to='/upimg2' className='linking'><Button icon={Photo} text="Retake Photo" onClick={()=>{}} /></Link>
+      </div>
 
 
     </div>

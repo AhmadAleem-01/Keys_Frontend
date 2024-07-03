@@ -81,3 +81,27 @@
     font-weight: 500;
 }
 
+
+@media (max-width: 476px) {
+    .genimg-box {
+        margin-bottom: 30px;
+    }
+
+    .slider-val{
+        margin-bottom: 30px;
+    }
+    .genimg-dist h2{
+        margin: 0;
+    }
+
+    .genimg-bite{
+        margin-top: 30px;
+    }
+
+    .genimg-buttons{
+        z-index: 1;
+        margin-top: 30px;
+
+    }
+    
+}

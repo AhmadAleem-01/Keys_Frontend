@@ -168,10 +168,10 @@ const Uploadimg2 = () => {
 
       <div className='upload-box2'>
         <div className='upload-box2-icon'>
-          {/* <img src={ImgDisplay} alt='show'/> */}
+          <img src={ImgDisplay} alt='show'/>
         </div>
         <video ref={videoRef} className='video-feed' />
-        <canvas ref={canvasRef} className='video-canvas' />
+        <canvas ref={canvasRef} className='video-canvas' width="280px" height="400px"/>
       </div>
 
       <div className='select-buttons2'>

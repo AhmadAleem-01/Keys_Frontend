@@ -9,6 +9,7 @@
     border-radius: 20px;
     margin-top: 80px;
     margin-bottom: 0px;
+    z-index: 1;
 }
 
 .model-dropdown-input{
