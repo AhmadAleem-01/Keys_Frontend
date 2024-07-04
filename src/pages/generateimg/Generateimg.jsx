@@ -9,10 +9,12 @@ import Photo from '../../assets/photo.svg';
 
 
 const Generateimg = () => {
+  const hash = window.location.hash;
+  const data = hash.substring(1);
   return (
     <div className='upload-main'>
       <div className='upload-img'>
-          <Link to='/upimg2'><img className='back' src={Back} alt='top-icon'/></Link>
+          <Link to={`/upimg2#${data}`}><img className='back' src={Back} alt='top-icon'/></Link>
           <img src={Header} alt='top-icon'/>
       </div>
       <div className='genimg-boxtext'>
@@ -66,7 +68,7 @@ const Generateimg = () => {
         </div>
       </div>
       <div className='genimg-buttons'>
-        <Link to='/upimg2' className='linking'><Button icon={Photo} text="Retake Photo" onClick={()=>{}} /></Link>
+        <Link to={`/upimg2#${data}`} className='linking'><Button icon={Photo} text="Retake Photo" onClick={()=>{}} /></Link>
       </div>
 
 
