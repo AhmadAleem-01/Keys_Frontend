@@ -27,17 +27,18 @@ const Uploadimg2 = () => {
     fetchData();
   }, [data]);
 
+  const startVideo = () => {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream => {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      })
+      .catch(err => {
+        console.error("Error accessing the camera", err);
+      });
+  };
+
   useEffect(() => {
-    const startVideo = () => {
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then(stream => {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play();
-        })
-        .catch(err => {
-          console.error("Error accessing the camera", err);
-        });
-    };
     startVideo();
   }, []);
 
@@ -105,8 +106,8 @@ const Uploadimg2 = () => {
       context.stroke();
 
       if (keyData) {
-        let depths
-        if (keyData.hasVariant){
+        let depths;
+        if (keyData.hasVariant) {
           depths = keyData.Depth.map(d => d.split(',').map(d => parseInt(d, 10) * dpi / 1000)).flat();
           depths = depths.filter((value, index) => depths.indexOf(value) === index);
           console.log(depths, "depths");
@@ -158,7 +159,7 @@ const Uploadimg2 = () => {
 
                 markedLines.add(shoulder);
 
-                if (!keyData.hasVariant){
+                if (!keyData.hasVariant) {
                   const index = depths.indexOf(depth);
                   newDetectedEdges.push({ edge: y, decoding: keyData.Decoding.split(',')[index] });
                   break;
@@ -196,7 +197,7 @@ const Uploadimg2 = () => {
         <div className='upload-box2-icon'>
           <img src={ImgDisplay} alt='show'/>
         </div>
-        <video ref={videoRef} className='video-feed' />
+        <video ref={videoRef} className='video-feed' playsInline />
         <canvas ref={canvasRef} className='video-canvas' width="280px" height="400px"/>
       </div>
 
