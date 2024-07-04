@@ -13,6 +13,7 @@ const Uploadimg2 = () => {
   const [keyData, setKeyData] = useState(null);
   const [shoulderDistance, setShoulderDistance] = useState([]);
   const [detectedEdges, setDetectedEdges] = useState([]);
+  const [decoding, setDecoding] = useState([])
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const hash = window.location.hash;
@@ -186,6 +187,12 @@ const Uploadimg2 = () => {
 
   console.log(shoulderDistance);
 
+  useEffect(()=> {
+    // extract the decodings from the detected edges
+    const decoding = detectedEdges.map(edge => edge.decoding);
+    setDecoding(decoding)
+  }, [detectedEdges])
+
   return (
     <div className='upload-main'>
       <div className='upload-img'>
@@ -204,10 +211,14 @@ const Uploadimg2 = () => {
       <div className='select-buttons2'>
         <p>Is this fine?</p>
         <Link to={`/upimg#${data}`} className='linking'><Button icon={Photo} text="Retake Photo" onClick={() => {}} /></Link>
-        <Link to={`/genimg#${data}`} className='linking'><Button icon={Proceed} text="Proceed" onClick={() => {}} color='#FFFFFF' /></Link>
+        <Link to={`/genimg#${data}-#${decoding}`} className='linking'><Button icon={Proceed} text="Proceed" onClick={() => {}} color='#FFFFFF' /></Link>
+        {/* <Link to={{ pathname: `/genimg`, state: { detectedEdges }, hash: `${data}` }} className='linking'>
+          <Button icon={Proceed} text="Proceed" onClick={() => {}} color='#FFFFFF' />
+        </Link> */}
       </div>
 
       <div className='detected-edges'>
+        {console.log(detectedEdges)}
         {detectedEdges.length > 0 && (
           <p>
             Decodings:
