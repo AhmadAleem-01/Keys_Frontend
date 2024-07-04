@@ -5,6 +5,7 @@ import Back from '../../assets/back-arrow.svg'
 import Button from '../../components/button/Button';
 import Tips from '../../assets/tips.svg';
 import Photo from '../../assets/photo.svg';
+import Upload from '../../assets/upload.svg';
 import { Link } from 'react-router-dom';
 
 
@@ -29,6 +30,7 @@ const Uploadimg = () => {
       </div>
 
       <Link to={`/upimg2${hash}`} className='linking'><Button icon={Photo} text="Take Photo" onClick={()=>{}}/></Link>
+      <Link to={`/upimg2${hash}`} className='linking'><Button icon={Upload} text="Upload Photo" onClick={()=>{}}/></Link>
 
     </div>
   )
