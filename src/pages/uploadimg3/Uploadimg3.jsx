@@ -65,14 +65,22 @@ const Uploadimg3 = () => {
 
   useEffect(() => {
     const drawGuidanceLines = () => {
-      const canvas = guidanceCanvasRef.current;
-      const context = canvas.getContext('2d');
-      const dpi = window.devicePixelRatio * 140;
+      const canvas = guidanceCanvasRef?.current;
+      const context = canvas?.getContext('2d');
+      const image = new Image();
+      image.src = selectedImage;
+
+      if (!canvas || !context) {
+        return;
+      }
+
+      canvas.width = image?.width;
+      canvas.height = image?.height;
+
+      const dpi = window.devicePixelRatio * 440;
       const lineGap = keyData?.widthUnCutKeys * dpi;
       const halfCanvasWidth = canvas.width / 2;
       const redLineGap = lineGap / 2;
-
-      context.clearRect(0, 0, canvas.width, canvas.height);
 
       context.beginPath();
       context.strokeStyle = 'red';
@@ -93,36 +101,18 @@ const Uploadimg3 = () => {
       context.lineWidth = 2;
 
       context.moveTo(x1, canvas.height * 0.1);
-      context.lineTo(x1 - 20, canvas.height * 0.1);
+      context.lineTo(x1 - 20, canvas.height * 0.1); 
       context.moveTo(x2, canvas.height * 0.1);
-      context.lineTo(x2 + 20, canvas.height * 0.1);
+      context.lineTo(x2 + 20, canvas.height * 0.1); 
 
       context.stroke();
-    };
 
-    const drawLines = () => {
-      const canvas = canvasRef.current;
-      const context = canvas.getContext('2d');
-      const image = new Image();
-
-      if (selectedImage) {
-        image.src = selectedImage;
-        image.onload = () => {
-          canvas.width = image.width;
-          canvas.height = image.height;
-          context.drawImage(image, 0, 0, canvas.width, canvas.height);
-          drawKeyLines(context, canvas);
-        };
-      }
-    };
-
-    const drawKeyLines = (context, canvas) => {
       if (keyData) {
-        const dpi = window.devicePixelRatio * 140;
         let depths;
         if (keyData.hasVariant) {
           depths = keyData.Depth.map(d => d.split(',').map(d => parseInt(d, 10) * dpi / 1000)).flat();
           depths = depths.filter((value, index) => depths.indexOf(value) === index);
+          console.log(depths, "depths");
         } else {
           depths = keyData.Depth.split(',').map(d => parseInt(d, 10) * dpi / 1000);
         }
@@ -132,7 +122,7 @@ const Uploadimg3 = () => {
         context.lineWidth = 1;
 
         depths.forEach(depth => {
-          const x = (canvas.width / 2) + depth;
+          const x = x1 + depth;
           context.moveTo(x, canvas.height * 0.1);
           context.lineTo(x, canvas.height * 0.9);
         });
@@ -154,7 +144,7 @@ const Uploadimg3 = () => {
         shoulders.forEach(shoulder => {
           if (!markedLines.has(shoulder)) {
             for (let depth of depths) {
-              const x = (canvas.width / 2) + depth;
+              const x = x1 + depth;
               const y = shoulder + (canvas.height * 0.1);
 
               const pixelData = context.getImageData(x, y, 1, 1).data;
@@ -190,12 +180,8 @@ const Uploadimg3 = () => {
       }
     };
 
-    if (selectedImage && keyData) {
-      drawGuidanceLines();
-      const interval = setInterval(drawLines, 100);
-      return () => clearInterval(interval);
-    }
-  }, [selectedImage, shoulderDistance, keyData]);
+    drawGuidanceLines();
+  }, [selectedImage, keyData, shoulderDistance]);
 
   return (
     <div className='upload-main'>
@@ -218,13 +204,13 @@ const Uploadimg3 = () => {
         <button onClick={() => inputFileRef.current.click()}>Upload Image</button>
         {selectedImage && (
           <div className="canvas-container">
+            <canvas ref={guidanceCanvasRef} className='guidance-canvas' />
             <TransformWrapper>
               <TransformComponent>
                 <img src={selectedImage} alt="uploaded" className='uploaded-image' />
                 <canvas ref={canvasRef} className='image-canvas' />
               </TransformComponent>
             </TransformWrapper>
-            <canvas ref={guidanceCanvasRef} className='guidance-canvas' />
           </div>
         )}
       </div>
@@ -234,23 +220,12 @@ const Uploadimg3 = () => {
         <Link to={`/upimg`} className='linking'>
           <Button icon={Photo} text="Retake Photo" onClick={() => { }} />
         </Link>
-        <Link to={`/genimg#${data}`} className='linking'>
-          <Button icon={Proceed} text="Proceed" onClick={() => { }} color='#FFFFFF' />
+        <Link to={`/upimg4#${data}`} className='linking'>
+          <Button icon={Proceed} text="Proceed" onClick={() => { }} />
         </Link>
-      </div>
-
-      <div className='detected-edges'>
-        {detectedEdges.length > 0 && (
-          <p>
-            Decodings:
-            {detectedEdges.map((edge, index) => (
-              <span key={index}> {edge.decoding} </span>
-            ))}
-          </p>
-        )}
       </div>
     </div>
   );
-}
+};
 
 export default Uploadimg3;
