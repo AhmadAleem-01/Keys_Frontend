@@ -33,9 +33,9 @@ const Uploadimg = () => {
       <Link to={`/upimg2${hash}`} className="linking">
         <Button icon={Photo} text="Take Photo" onClick={() => {}} />
       </Link>
-      {/* <Link to={`/upimg3${hash}`} className="linking">
+      <Link to={`/upimg3${hash}`} className="linking">
         <Button icon={Upload} text="Upload Photo" onClick={() => {}} />
-      </Link> */}
+      </Link>
     </div>
   );
 };
