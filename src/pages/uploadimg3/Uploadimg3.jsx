@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import './uploadimg3.css';
 import { Link } from 'react-router-dom';
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import './uploadimg3.css';
 import Header from '../../assets/2outof3.svg';
 import Back from '../../assets/back-arrow.svg';
 import ImgDisplay from '../../assets/displayimg.svg';
@@ -15,9 +15,10 @@ const Uploadimg3 = () => {
   const [keyData, setKeyData] = useState(null);
   const [shoulderDistance, setShoulderDistance] = useState([]);
   const [detectedEdges, setDetectedEdges] = useState([]);
+  const [decoding, setDecoding] = useState([]);
   const inputFileRef = useRef(null);
-  const canvasRef = useRef(null);
   const guidanceCanvasRef = useRef(null);
+  const imageCanvasRef = useRef(null);
   const hash = window.location.hash;
   const data = hash.substring(1);
 
@@ -63,100 +64,138 @@ const Uploadimg3 = () => {
     }
   }, [keyData]);
 
-  useEffect(() => {
-    const drawGuidanceLines = () => {
-      const canvas = guidanceCanvasRef?.current;
-      const context = canvas?.getContext('2d');
-      const image = new Image();
-      image.src = selectedImage;
+  const drawGuidanceLines = () => {
+    const canvas = guidanceCanvasRef.current;
+    const context = canvas?.getContext('2d');
 
-      if (!canvas || !context) {
-        return;
+    if (!canvas || !context) {
+      return;
+    }
+
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    const dpi = window.devicePixelRatio * 140;
+    const lineGap = keyData?.widthUnCutKeys * dpi;
+    const halfCanvasWidth = canvas.width / 2;
+    const redLineGap = lineGap / 2;
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw red lines
+    context.beginPath();
+    context.strokeStyle = 'red';
+    context.lineWidth = 2;
+
+    const x1 = halfCanvasWidth - redLineGap;
+    const x2 = halfCanvasWidth + redLineGap;
+
+    context.moveTo(x1, canvas.height * 0.1);
+    context.lineTo(x1, canvas.height * 0.9);
+    context.moveTo(x2, canvas.height * 0.1);
+    context.lineTo(x2, canvas.height * 0.9);
+
+    context.stroke();
+
+    // Draw green lines 
+    context.beginPath();
+    context.strokeStyle = 'green';
+    context.lineWidth = 2;
+
+    context.moveTo(x1, canvas.height * 0.1);
+    context.lineTo(x1 - 20, canvas.height * 0.1);
+    context.moveTo(x2, canvas.height * 0.1);
+    context.lineTo(x2 + 20, canvas.height * 0.1);
+
+    context.stroke();
+
+    // Draw blue lines based on key data
+    if (keyData) {
+      let depths;
+      if (keyData.hasVariant) {
+        depths = keyData.Depth.map(d => d.split(',').map(d => parseInt(d, 10) * dpi / 1000)).flat();
+        depths = depths.filter((value, index) => depths.indexOf(value) === index);
+      } else {
+        depths = keyData.Depth.split(',').map(d => parseInt(d, 10) * dpi / 1000);
       }
 
-      canvas.width = image?.width;
-      canvas.height = image?.height;
+      const shoulders = shoulderDistance.map(d => parseInt(d, 10) * dpi / 1000);
 
-      const dpi = window.devicePixelRatio * 440;
+      context.strokeStyle = 'rgba(0, 0, 255, 0.5)';
+      context.lineWidth = 1;
+
+      depths.forEach(depth => {
+        const x = halfCanvasWidth - redLineGap + depth;
+        context.moveTo(x, canvas.height * 0.1);
+        context.lineTo(x, canvas.height * 0.9);
+      });
+
+      shoulders.forEach(shoulder => {
+        const y = shoulder + (canvas.height * 0.1);
+        context.moveTo(0, y);
+        context.lineTo(canvas.width * 0.8, y);
+      });
+
+      context.stroke();
+    }
+  };
+
+  const drawImageCanvas = () => {
+    const imageCanvas = imageCanvasRef?.current;
+    const guidanceCanvas = guidanceCanvasRef?.current;
+    const imageContext = imageCanvas?.getContext('2d');
+
+    if (!selectedImage || !imageCanvas || !guidanceCanvas || !imageContext) {
+      return;
+    }
+
+    const image = new Image();
+    image.src = selectedImage;
+
+    image.onload = () => {
+      imageCanvas.width = image.width;
+      imageCanvas.height = image.height;
+      imageContext.drawImage(image, 0, 0);
+
+      const dpi = window.devicePixelRatio * 140;
       const lineGap = keyData?.widthUnCutKeys * dpi;
-      const halfCanvasWidth = canvas.width / 2;
+      const halfCanvasWidth = guidanceCanvas.width / 2;
       const redLineGap = lineGap / 2;
-
-      context.beginPath();
-      context.strokeStyle = 'red';
-      context.lineWidth = 2;
-
-      const x1 = halfCanvasWidth - redLineGap;
-      const x2 = halfCanvasWidth + redLineGap;
-
-      context.moveTo(x1, canvas.height * 0.1);
-      context.lineTo(x1, canvas.height * 0.9);
-      context.moveTo(x2, canvas.height * 0.1);
-      context.lineTo(x2, canvas.height * 0.9);
-
-      context.stroke();
-
-      context.beginPath();
-      context.strokeStyle = 'green';
-      context.lineWidth = 2;
-
-      context.moveTo(x1, canvas.height * 0.1);
-      context.lineTo(x1 - 20, canvas.height * 0.1); 
-      context.moveTo(x2, canvas.height * 0.1);
-      context.lineTo(x2 + 20, canvas.height * 0.1); 
-
-      context.stroke();
 
       if (keyData) {
         let depths;
         if (keyData.hasVariant) {
           depths = keyData.Depth.map(d => d.split(',').map(d => parseInt(d, 10) * dpi / 1000)).flat();
           depths = depths.filter((value, index) => depths.indexOf(value) === index);
-          console.log(depths, "depths");
         } else {
           depths = keyData.Depth.split(',').map(d => parseInt(d, 10) * dpi / 1000);
         }
+        
         const shoulders = shoulderDistance.map(d => parseInt(d, 10) * dpi / 1000);
-
-        context.strokeStyle = 'rgba(0, 0, 255, 0.5)';
-        context.lineWidth = 1;
-
-        depths.forEach(depth => {
-          const x = x1 + depth;
-          context.moveTo(x, canvas.height * 0.1);
-          context.lineTo(x, canvas.height * 0.9);
-        });
-
-        shoulders.forEach(shoulder => {
-          const y = shoulder + (canvas.height * 0.1);
-          context.moveTo(0, y);
-          context.lineTo(canvas.width * 0.8, y);
-        });
-
-        context.stroke();
 
         const markedLines = new Set();
         const newDetectedEdges = [];
 
-        context.strokeStyle = 'yellow';
-        context.lineWidth = 2;
+        const guidanceContext = guidanceCanvas?.getContext('2d');
+        guidanceContext.clearRect(0, 0, guidanceCanvas.width, guidanceCanvas.height);
+        drawGuidanceLines();
 
         shoulders.forEach(shoulder => {
           if (!markedLines.has(shoulder)) {
             for (let depth of depths) {
-              const x = x1 + depth;
-              const y = shoulder + (canvas.height * 0.1);
+              const x = halfCanvasWidth - redLineGap + depth;
+              const y = shoulder + (guidanceCanvas.height * 0.1);
 
-              const pixelData = context.getImageData(x, y, 1, 1).data;
+              const pixelData = imageContext.getImageData(x, y, 1, 1).data;
               const intensity = (pixelData[0] + pixelData[1] + pixelData[2]) / 3;
 
               if (intensity < 100) {
-                context.beginPath();
-                context.moveTo(x, y - 5);
-                context.lineTo(x, y + 5);
-                context.strokeStyle = 'yellow';
-                context.lineWidth = 2;
-                context.stroke();
+                guidanceContext.beginPath();
+                guidanceContext.moveTo(x, y - 5); // Small vertical line
+                guidanceContext.lineTo(x, y + 5);
+                guidanceContext.strokeStyle = 'yellow';
+                guidanceContext.lineWidth = 2;
+                guidanceContext.stroke();
 
                 markedLines.add(shoulder);
 
@@ -175,18 +214,32 @@ const Uploadimg3 = () => {
             }
           }
         });
-
+        console.log(newDetectedEdges, "newDetectedEdges");
         setDetectedEdges(newDetectedEdges);
       }
     };
+  };
 
+  useEffect(() => {
     drawGuidanceLines();
+  }, [keyData, shoulderDistance]);
+  
+
+  useEffect(() => {
+    if (selectedImage) {
+      drawImageCanvas();
+    }
   }, [selectedImage, keyData, shoulderDistance]);
+
+  useEffect(() => {
+    const decodingData = detectedEdges.map(edge => edge.decoding);
+    setDecoding(decodingData);
+  }, [detectedEdges]);
 
   return (
     <div className='upload-main'>
       <div className='upload-img'>
-        <Link to={`/upimg`}><img className='back' src={Back} alt='back-icon' /></Link>
+        <Link to={`/upimg#${data}`}><img className='back' src={Back} alt='back-icon' /></Link>
         <img src={Header} alt='header-icon' />
       </div>
 
@@ -194,21 +247,14 @@ const Uploadimg3 = () => {
         <div className='upload-box2-icon'>
           <img src={ImgDisplay} alt='display-icon' />
         </div>
-        <input
-          type="file"
-          accept="image/*"
-          ref={inputFileRef}
-          style={{ display: 'none' }}
-          onChange={handleImageUpload}
-        />
-        <button onClick={() => inputFileRef.current.click()}>Upload Image</button>
+        
         {selectedImage && (
           <div className="canvas-container">
-            <canvas ref={guidanceCanvasRef} className='guidance-canvas' />
+            <canvas ref={guidanceCanvasRef} className='guidance-canvas fixed-canvas' />
             <TransformWrapper>
               <TransformComponent>
                 <img src={selectedImage} alt="uploaded" className='uploaded-image' />
-                <canvas ref={canvasRef} className='image-canvas' />
+                <canvas ref={imageCanvasRef} className='image-canvas' />
               </TransformComponent>
             </TransformWrapper>
           </div>
@@ -216,13 +262,21 @@ const Uploadimg3 = () => {
       </div>
 
       <div className='select-buttons2'>
+      <input
+          type="file"
+          accept="image/*"
+          ref={inputFileRef}
+          style={{ display: 'none' }}
+          onChange={handleImageUpload}
+        />
+        <button onClick={() => inputFileRef.current.click()}>Upload Image</button>
         <p>Is this fine?</p>
-        <Link to={`/upimg`} className='linking'>
+        <Link to={`/upimg#${data}`} className='linking'>
           <Button icon={Photo} text="Retake Photo" onClick={() => { }} />
         </Link>
-        <Link to={`/upimg4#${data}`} className='linking'>
+        {/* <Link to={`/upimg3#${data}`} className='linking'>
           <Button icon={Proceed} text="Proceed" onClick={() => { }} />
-        </Link>
+        </Link> */}
       </div>
     </div>
   );
