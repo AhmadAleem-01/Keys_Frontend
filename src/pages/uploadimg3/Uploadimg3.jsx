@@ -21,6 +21,7 @@ const Uploadimg3 = () => {
   const imageCanvasRef = useRef(null);
   const hash = window.location.hash;
   const data = hash.substring(1);
+  const [originalDecoding, setOriginalDecoding] = useState([])
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -236,6 +237,25 @@ const Uploadimg3 = () => {
     setDecoding(decodingData);
   }, [detectedEdges]);
 
+  const handleDecoding = () => {
+    if (selectedImage === null) {
+      alert("Please upload an image first");
+      return;
+    }
+    // check if keyData.Decoding is an array
+    if (keyData.Decoding instanceof Array) {
+      console.log("here")
+      setOriginalDecoding(null)
+      alert("Unsupported variant, please capture a live photo");
+      return
+    }
+
+    const originalDecoding = keyData?.Decoding;
+    console.log(originalDecoding, "originalDecoding");
+    setOriginalDecoding(originalDecoding);
+    // the orginal decoding will be like such 1,2,3,4,5 I want to display this on a alert box
+    alert(`Decoding: ${originalDecoding}`);
+  }
   return (
     <div className='upload-main'>
       <div className='upload-img'>
@@ -274,9 +294,9 @@ const Uploadimg3 = () => {
         <Link to={`/upimg#${data}`} className='linking'>
           <Button icon={Photo} text="Retake Photo" onClick={() => { }} />
         </Link>
-        {/* <Link to={`/upimg3#${data}`} className='linking'>
-          <Button icon={Proceed} text="Proceed" onClick={() => { }} />
-        </Link> */}
+        {/* <Link to={`/upimg3#${data}`} className='linking'> */}
+          <Button icon={Proceed} text="Proceed" onClick={handleDecoding} />
+        {/* </Link> */}
       </div>
     </div>
   );
