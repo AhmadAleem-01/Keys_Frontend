@@ -38,7 +38,7 @@ const Generateimg = () => {
       </div>
 
       <div className='genimg-buttons'>
-        <Link to={`/upimg2#${data}`} className='linking'><Button icon={Photo} text="Retake Photo" onClick={()=>{}} /></Link>
+        <Link to={`/upimg#${data}`} className='linking'><Button icon={Photo} text="Retake Photo" onClick={()=>{}} /></Link>
       </div>
     </div>
   )

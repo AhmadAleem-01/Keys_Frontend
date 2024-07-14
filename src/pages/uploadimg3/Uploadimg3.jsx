@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './uploadimg3.css';
 import { Link } from 'react-router-dom';
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import Header from '../../assets/2outof3.svg';
 import Back from '../../assets/back-arrow.svg';
 import ImgDisplay from '../../assets/displayimg.svg';
@@ -11,30 +10,20 @@ import Proceed from '../../assets/proceed.svg';
 import axios from 'axios';
 
 const Uploadimg3 = () => {
-  const [selectedImage, setSelectedImage] = useState(null);
   const [keyData, setKeyData] = useState(null);
   const [shoulderDistance, setShoulderDistance] = useState([]);
   const [detectedEdges, setDetectedEdges] = useState([]);
   const [decoding, setDecoding] = useState([]);
-  const inputFileRef = useRef(null);
-  const guidanceCanvasRef = useRef(null);
-  const imageCanvasRef = useRef(null);
+  const [image, setImage] = useState(null);
+  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [startDragOffset, setStartDragOffset] = useState({ x: 0, y: 0 });
+  const [scale, setScale] = useState(1);
+  const [lastTouchDistance, setLastTouchDistance] = useState(null);
+  const canvasRef = useRef(null);
+  const animationFrameRef = useRef(null);
   const hash = window.location.hash;
   const data = hash.substring(1);
-  const [originalDecoding, setOriginalDecoding] = useState([])
-
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      setSelectedImage(reader.result);
-    };
-
-    if (file) {
-      reader.readAsDataURL(file);
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,25 +54,35 @@ const Uploadimg3 = () => {
     }
   }, [keyData]);
 
-  const drawGuidanceLines = () => {
-    const canvas = guidanceCanvasRef.current;
+  const drawLines = useCallback(() => {
+    const canvas = canvasRef.current;
     const context = canvas?.getContext('2d');
+    const imageElement = document.getElementById('uploaded-image');
 
-    if (!canvas || !context) {
+    if (!context || !imageElement) {
       return;
     }
 
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+
+    // Clear canvas
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw image on canvas
+    context.drawImage(
+      imageElement,
+      imagePosition.x,
+      imagePosition.y,
+      imageElement.width * scale,
+      imageElement.height * scale
+    );
 
     const dpi = window.devicePixelRatio * 140;
     const lineGap = keyData?.widthUnCutKeys * dpi;
     const halfCanvasWidth = canvas.width / 2;
     const redLineGap = lineGap / 2;
 
-    context.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw red lines
     context.beginPath();
     context.strokeStyle = 'red';
     context.lineWidth = 2;
@@ -98,35 +97,34 @@ const Uploadimg3 = () => {
 
     context.stroke();
 
-    // Draw green lines 
+    // Draw green lines horizontally from the red lines
     context.beginPath();
     context.strokeStyle = 'green';
     context.lineWidth = 2;
 
     context.moveTo(x1, canvas.height * 0.1);
-    context.lineTo(x1 - 20, canvas.height * 0.1);
+    context.lineTo(x1 - 20, canvas.height * 0.1); // Green line to the left of the first red line
     context.moveTo(x2, canvas.height * 0.1);
-    context.lineTo(x2 + 20, canvas.height * 0.1);
+    context.lineTo(x2 + 20, canvas.height * 0.1); // Green line to the right of the second red line
 
     context.stroke();
 
-    // Draw blue lines based on key data
     if (keyData) {
       let depths;
       if (keyData.hasVariant) {
         depths = keyData.Depth.map(d => d.split(',').map(d => parseInt(d, 10) * dpi / 1000)).flat();
         depths = depths.filter((value, index) => depths.indexOf(value) === index);
+        // console.log(depths, "depths");
       } else {
         depths = keyData.Depth.split(',').map(d => parseInt(d, 10) * dpi / 1000);
       }
-
       const shoulders = shoulderDistance.map(d => parseInt(d, 10) * dpi / 1000);
 
       context.strokeStyle = 'rgba(0, 0, 255, 0.5)';
       context.lineWidth = 1;
 
       depths.forEach(depth => {
-        const x = halfCanvasWidth - redLineGap + depth;
+        const x = x1 + depth;
         context.moveTo(x, canvas.height * 0.1);
         context.lineTo(x, canvas.height * 0.9);
       });
@@ -138,168 +136,222 @@ const Uploadimg3 = () => {
       });
 
       context.stroke();
-    }
-  };
 
-  const drawImageCanvas = () => {
-    const imageCanvas = imageCanvasRef?.current;
-    const guidanceCanvas = guidanceCanvasRef?.current;
-    const imageContext = imageCanvas?.getContext('2d');
+      // Analyze intersections for biting points
+      const markedLines = new Set();
+      const newDetectedEdges = [];
 
-    if (!selectedImage || !imageCanvas || !guidanceCanvas || !imageContext) {
-      return;
-    }
+      context.strokeStyle = 'yellow';
+      context.lineWidth = 2;
 
-    const image = new Image();
-    image.src = selectedImage;
+      shoulders.forEach(shoulder => {
+        if (!markedLines.has(shoulder)) {
+          for (let depth of depths) {
+            const x = x1 + depth;
+            const y = shoulder + (canvas.height * 0.1);
 
-    image.onload = () => {
-      imageCanvas.width = image.width;
-      imageCanvas.height = image.height;
-      imageContext.drawImage(image, 0, 0);
+            const pixelData = context.getImageData(x, y, 1, 1).data;
+            const intensity = (pixelData[0] + pixelData[1] + pixelData[2]) / 3;
 
-      const dpi = window.devicePixelRatio * 140;
-      const lineGap = keyData?.widthUnCutKeys * dpi;
-      const halfCanvasWidth = guidanceCanvas.width / 2;
-      const redLineGap = lineGap / 2;
+            if (intensity > 100) { // Adjusted intensity threshold for better detection on dark backgrounds
+              context.beginPath();
+              context.moveTo(x, y - 5); // Small vertical line
+              context.lineTo(x, y + 5);
+              context.strokeStyle = 'yellow';
+              context.lineWidth = 2;
+              context.stroke();
 
-      if (keyData) {
-        let depths;
-        if (keyData.hasVariant) {
-          depths = keyData.Depth.map(d => d.split(',').map(d => parseInt(d, 10) * dpi / 1000)).flat();
-          depths = depths.filter((value, index) => depths.indexOf(value) === index);
-        } else {
-          depths = keyData.Depth.split(',').map(d => parseInt(d, 10) * dpi / 1000);
-        }
-        
-        const shoulders = shoulderDistance.map(d => parseInt(d, 10) * dpi / 1000);
+              markedLines.add(shoulder);
 
-        const markedLines = new Set();
-        const newDetectedEdges = [];
-
-        const guidanceContext = guidanceCanvas?.getContext('2d');
-        guidanceContext.clearRect(0, 0, guidanceCanvas.width, guidanceCanvas.height);
-        drawGuidanceLines();
-
-        shoulders.forEach(shoulder => {
-          if (!markedLines.has(shoulder)) {
-            for (let depth of depths) {
-              const x = halfCanvasWidth - redLineGap + depth;
-              const y = shoulder + (guidanceCanvas.height * 0.1);
-
-              const pixelData = imageContext.getImageData(x, y, 1, 1).data;
-              const intensity = (pixelData[0] + pixelData[1] + pixelData[2]) / 3;
-
-              if (intensity < 100) {
-                guidanceContext.beginPath();
-                guidanceContext.moveTo(x, y - 5); // Small vertical line
-                guidanceContext.lineTo(x, y + 5);
-                guidanceContext.strokeStyle = 'yellow';
-                guidanceContext.lineWidth = 2;
-                guidanceContext.stroke();
-
-                markedLines.add(shoulder);
-
-                if (!keyData.hasVariant) {
-                  const index = depths.indexOf(depth);
-                  newDetectedEdges.push({ edge: y, decoding: keyData.Decoding.split(',')[index] });
-                  break;
-                } else {
-                  const tempArray = keyData.Decoding.map(d => d.split(',')).flat();
-                  const decodings = tempArray.filter((value, index) => tempArray.indexOf(value) === index);
-                  const index = depths.indexOf(depth);
-                  newDetectedEdges.push({ edge: y, decoding: decodings[index] });
-                  break;
-                }
+              if (!keyData.hasVariant) {
+                const index = depths.indexOf(depth);
+                newDetectedEdges.push({ edge: y, decoding: keyData.Decoding.split(',')[index] });
+                break;
+              } else {
+                const tempArray = keyData.Decoding.map(d => d.split(',')).flat();
+                const decodings = tempArray.filter((value, index) => tempArray.indexOf(value) === index);
+                const index = depths.indexOf(depth);
+                newDetectedEdges.push({ edge: y, decoding: decodings[index] });
+                break;
               }
             }
           }
-        });
-        console.log(newDetectedEdges, "newDetectedEdges");
-        setDetectedEdges(newDetectedEdges);
-      }
-    };
-  };
+        }
+      });
 
-  useEffect(() => {
-    drawGuidanceLines();
-  }, [keyData, shoulderDistance]);
-  
-
-  useEffect(() => {
-    if (selectedImage) {
-      drawImageCanvas();
+      setDetectedEdges(newDetectedEdges);
     }
-  }, [selectedImage, keyData, shoulderDistance]);
+  }, [shoulderDistance, keyData, imagePosition, scale]);
 
   useEffect(() => {
-    const decodingData = detectedEdges.map(edge => edge.decoding);
-    setDecoding(decodingData);
+    const animate = () => {
+      drawLines();
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrameRef.current);
+  }, [drawLines]);
+
+  useEffect(() => {
+    // extract the decodings from the detected edges
+    const decoding = detectedEdges.map(edge => edge.decoding);
+    setDecoding(decoding);
   }, [detectedEdges]);
 
-  const handleDecoding = () => {
-    if (selectedImage === null) {
-      alert("Please upload an image first");
-      return;
-    }
-    // check if keyData.Decoding is an array
-    if (keyData.Decoding instanceof Array) {
-      console.log("here")
-      setOriginalDecoding(null)
-      alert("Unsupported variant, please capture a live photo");
-      return
-    }
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
 
-    const originalDecoding = keyData?.Decoding;
-    console.log(originalDecoding, "originalDecoding");
-    setOriginalDecoding(originalDecoding);
-    // the orginal decoding will be like such 1,2,3,4,5 I want to display this on a alert box
-    alert(`Decoding: ${originalDecoding}`);
-  }
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const aspectRatio = img.width / img.height;
+        const canvasWidth = canvasRef.current.parentElement.clientWidth;
+        const canvasHeight = canvasRef.current.parentElement.clientHeight;
+        const initialScale = Math.min(canvasWidth / img.width, canvasHeight / img.height);
+        setScale(initialScale);
+        setImagePosition({
+          x: (canvasWidth - img.width * initialScale) / 2,
+          y: (canvasHeight - img.height * initialScale) / 2,
+        });
+        setImage(e.target.result);
+      };
+      img.src = e.target.result;
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const handleMouseDown = (event) => {
+    event.preventDefault();
+    setIsDragging(true);
+    setStartDragOffset({
+      x: event.clientX - imagePosition.x,
+      y: event.clientY - imagePosition.y,
+    });
+  };
+
+  const handleMouseMove = (event) => {
+    event.preventDefault();
+    if (isDragging) {
+      setImagePosition({
+        x: event.clientX - startDragOffset.x,
+        y: event.clientY - startDragOffset.y,
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleTouchStart = (event) => {
+    event.preventDefault();
+    if (event.touches.length === 2) {
+      const touch1 = event.touches[0];
+      const touch2 = event.touches[1];
+      const distance = Math.sqrt(
+        (touch1.clientX - touch2.clientX) ** 2 + (touch1.clientY - touch2.clientY) ** 2
+      );
+      setLastTouchDistance(distance);
+    } else if (event.touches.length === 1) {
+      const touch = event.touches[0];
+      setIsDragging(true);
+      setStartDragOffset({
+        x: touch.clientX - imagePosition.x,
+        y: touch.clientY - imagePosition.y,
+      });
+    }
+  };
+
+  const handleTouchMove = (event) => {
+    event.preventDefault();
+    if (event.touches.length === 2) {
+      const touch1 = event.touches[0];
+      const touch2 = event.touches[1];
+      const distance = Math.sqrt(
+        (touch1.clientX - touch2.clientX) ** 2 + (touch1.clientY - touch2.clientY) ** 2
+      );
+      if (lastTouchDistance) {
+        const scaleAmount = (distance - lastTouchDistance) * 0.01;
+        setScale((prevScale) => Math.min(Math.max(prevScale + scaleAmount, 0.1), 10)); // Adjusted scale limits
+      }
+      setLastTouchDistance(distance);
+    } else if (event.touches.length === 1 && isDragging) {
+      const touch = event.touches[0];
+      setImagePosition({
+        x: touch.clientX - startDragOffset.x,
+        y: touch.clientY - startDragOffset.y,
+      });
+    }
+  };
+
+  const handleTouchEnd = (event) => {
+    event.preventDefault();
+    setIsDragging(false);
+    setLastTouchDistance(null);
+  };
+
   return (
     <div className='upload-main'>
       <div className='upload-img'>
-        <Link to={`/upimg#${data}`}><img className='back' src={Back} alt='back-icon' /></Link>
-        <img src={Header} alt='header-icon' />
+        <Link to={`/upimg#${data}`}><img className='back' src={Back} alt='top-icon' /></Link>
+        <img src={Header} alt='top-icon' />
       </div>
 
       <div className='upload-box2'>
         <div className='upload-box2-icon'>
-          <img src={ImgDisplay} alt='display-icon' />
+          <img src={ImgDisplay} alt='show'/>
         </div>
-        
-        {selectedImage && (
-          <div className="canvas-container">
-            <canvas ref={guidanceCanvasRef} className='guidance-canvas fixed-canvas' />
-            <TransformWrapper>
-              <TransformComponent>
-                <img src={selectedImage} alt="uploaded" className='uploaded-image' />
-                <canvas ref={imageCanvasRef} className='image-canvas' />
-              </TransformComponent>
-            </TransformWrapper>
-          </div>
-        )}
+        <div
+          className='canvas-container'
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {image && (
+            <img
+              id="uploaded-image"
+              src={image}
+              alt="Uploaded"
+              className='uploaded-image'
+              style={{
+                left: imagePosition.x,
+                top: imagePosition.y,
+                transform: `translate(-50%, -50%) scale(${scale})`,
+                transformOrigin: 'center',
+                display: 'none'
+              }}
+            />
+          )}
+          <canvas ref={canvasRef} className='video-canvas' width="280px" height="400px" />
+        </div>
       </div>
 
       <div className='select-buttons2'>
-      <input
-          type="file"
-          accept="image/*"
-          ref={inputFileRef}
-          style={{ display: 'none' }}
-          onChange={handleImageUpload}
-        />
-        <button onClick={() => inputFileRef.current.click()}>Upload Image</button>
+        <input type="file" accept="image/*" onChange={handleImageUpload} />
+
         <p>Is this fine?</p>
-        <Link to={`/upimg#${data}`} className='linking'>
-          <Button icon={Photo} text="Retake Photo" onClick={() => { }} />
-        </Link>
-        {/* <Link to={`/upimg3#${data}`} className='linking'> */}
-          <Button icon={Proceed} text="Proceed" onClick={handleDecoding} />
-        {/* </Link> */}
+        <Link to={`/upimg#${data}`} className='linking'><Button icon={Photo} text="Retake Photo" onClick={() => { }} /></Link>
+        <Link to={`/genimg#${data}-#${decoding}`} className='linking'><Button icon={Proceed} text="Proceed" onClick={() => { }} color='#FFFFFF' /></Link>
+      </div>
+
+      <div className='detected-edges'>
+        {detectedEdges.length > 0 && (
+          <p>
+            Decodings:
+            {detectedEdges.map((edge, index) => (
+              <span key={index}> {edge.decoding} </span>
+            ))}
+          </p>
+        )}
       </div>
     </div>
   );
-};
+}
 
 export default Uploadimg3;
