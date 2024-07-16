@@ -120,6 +120,8 @@ const Uploadimg3 = () => {
       }
       const shoulders = shoulderDistance.map(d => parseInt(d, 10) * dpi / 1000);
 
+      console.log(depths)
+
       context.strokeStyle = 'rgba(0, 0, 255, 0.5)';
       context.lineWidth = 1;
 
@@ -153,7 +155,7 @@ const Uploadimg3 = () => {
             const pixelData = context.getImageData(x, y, 1, 1).data;
             const intensity = (pixelData[0] + pixelData[1] + pixelData[2]) / 3;
 
-            if (intensity > 100) { // Adjusted intensity threshold for better detection on dark backgrounds
+            if (intensity > 75) {
               context.beginPath();
               context.moveTo(x, y - 5); // Small vertical line
               context.lineTo(x, y + 5);
