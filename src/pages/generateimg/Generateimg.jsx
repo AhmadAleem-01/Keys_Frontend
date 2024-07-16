@@ -21,7 +21,7 @@ const Generateimg = () => {
   return (
     <div className='upload-main'>
       <div className='upload-img'>
-        <Link to={`/upimg2#${data}`}><img className='back' src={Back} alt='top-icon'/></Link>
+        <Link to={`/upimg#${data}`}><img className='back' src={Back} alt='top-icon'/></Link>
         <img src={Header} alt='top-icon'/>
       </div>
 
