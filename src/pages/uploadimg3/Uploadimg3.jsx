@@ -114,13 +114,10 @@ const Uploadimg3 = () => {
       if (keyData.hasVariant) {
         depths = keyData.Depth.map(d => d.split(',').map(d => parseInt(d, 10) * dpi / 1000)).flat();
         depths = depths.filter((value, index) => depths.indexOf(value) === index);
-        // console.log(depths, "depths");
       } else {
         depths = keyData.Depth.split(',').map(d => parseInt(d, 10) * dpi / 1000);
       }
       const shoulders = shoulderDistance.map(d => parseInt(d, 10) * dpi / 1000);
-
-      console.log(depths)
 
       context.strokeStyle = 'rgba(0, 0, 255, 0.5)';
       context.lineWidth = 1;
@@ -147,37 +144,43 @@ const Uploadimg3 = () => {
       context.lineWidth = 2;
 
       shoulders.forEach(shoulder => {
-        if (!markedLines.has(shoulder)) {
-          for (let depth of depths) {
-            const x = x1 + depth;
-            const y = shoulder + (canvas.height * 0.1);
+        let rightmostDepth = -Infinity;
+        let rightmostDecoding = null;
 
-            const pixelData = context.getImageData(x, y, 1, 1).data;
-            const intensity = (pixelData[0] + pixelData[1] + pixelData[2]) / 3;
-
-            if (intensity > 75) {
-              context.beginPath();
-              context.moveTo(x, y - 5); // Small vertical line
-              context.lineTo(x, y + 5);
-              context.strokeStyle = 'yellow';
-              context.lineWidth = 2;
-              context.stroke();
-
-              markedLines.add(shoulder);
-
-              if (!keyData.hasVariant) {
-                const index = depths.indexOf(depth);
-                newDetectedEdges.push({ edge: y, decoding: keyData.Decoding.split(',')[index] });
-                break;
-              } else {
-                const tempArray = keyData.Decoding.map(d => d.split(',')).flat();
-                const decodings = tempArray.filter((value, index) => tempArray.indexOf(value) === index);
-                const index = depths.indexOf(depth);
-                newDetectedEdges.push({ edge: y, decoding: decodings[index] });
-                break;
-              }
+        depths.forEach(depth => {
+          const x = x1 + depth;
+          const y = shoulder + (canvas.height * 0.1);
+  
+          const pixelData = context.getImageData(x, y, 1, 1).data;
+          const intensity = (pixelData[0] + pixelData[1] + pixelData[2]) / 3;
+  
+          if (intensity > 75 && depth > rightmostDepth) {
+            rightmostDepth = depth;
+            if (!keyData.hasVariant) {
+              const index = depths.indexOf(depth);
+              rightmostDecoding = keyData.Decoding.split(',')[index];
+            } else {
+              const tempArray = keyData.Decoding.map(d => d.split(',')).flat();
+              const decodings = tempArray.filter((value, index) => tempArray.indexOf(value) === index);
+              const index = depths.indexOf(depth);
+              rightmostDecoding = decodings[index];
             }
           }
+        });
+  
+        if (rightmostDepth !== -Infinity) {
+          const x = x1 + rightmostDepth;
+          const y = shoulder + (canvas.height * 0.1);
+  
+          context.beginPath();
+          context.moveTo(x, y - 5); // Small vertical line
+          context.lineTo(x, y + 5);
+          context.strokeStyle = 'yellow';
+          context.lineWidth = 2;
+          context.stroke();
+  
+          markedLines.add(shoulder);
+          newDetectedEdges.push({ edge: y, decoding: rightmostDecoding });
         }
       });
 
