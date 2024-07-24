@@ -298,12 +298,12 @@ const Uploadimg3 = () => {
     setLastTouchDistance(null);
   };
 
-  const handleWheel = (event) => {
+const handleWheel = (event) => {
     event.preventDefault();
-    const zoomSpeed = 0.001;
+    const zoomSpeed = 0.00002;
     const newScale = Math.max(scale - event.deltaY * zoomSpeed, 0.1);
     setScale(newScale);
-  };
+};
 
   return (
     <div className='upload-main'>
