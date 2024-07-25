@@ -314,7 +314,7 @@ const handleWheel = (event) => {
 
       <div className='upload-box2'>
         <div className='upload-box2-icon'>
-          <img src={ImgDisplay} alt='show'/>
+          {/* <img src={ImgDisplay} alt='show'/> */}
         </div>
         <div
           className='canvas-container'
@@ -346,22 +346,34 @@ const handleWheel = (event) => {
       </div>
 
       <div className='select-buttons2'>
-        <input type="file" accept="image/*" onChange={handleImageUpload} />
+        {/* <input type="file" accept="image/*" onChange={handleImageUpload} /> */}
 
-        <p>Is this fine?</p>
-        <Link to={`/upimg#${data}`} className='linking'><Button icon={Photo} text="Retake Photo" onClick={() => { }} /></Link>
+        <input 
+          type="file" 
+          accept="image/*" 
+          id="fileInput" 
+          style={{ display: 'none' }} 
+          onChange={handleImageUpload} 
+        />
+
+        <Button 
+          icon={Photo} 
+          text="Upload Photo" 
+          onClick={() => document.getElementById('fileInput').click()} 
+        />
+
         <Link to={`/genimg#${data}-#${decoding}`} className='linking'><Button icon={Proceed} text="Proceed" onClick={() => { }} color='#FFFFFF' /></Link>
       </div>
 
       <div className='detected-edges'>
-        {detectedEdges.length > 0 && (
+
           <p>
             Decodings:
-            {detectedEdges.map((edge, index) => (
+            {detectedEdges?.map((edge, index) => (
               <span key={index}> {edge.decoding} </span>
             ))}
           </p>
-        )}
+
       </div>
     </div>
   );
