@@ -58,17 +58,17 @@ const Uploadimg3 = () => {
     const canvas = canvasRef.current;
     const context = canvas?.getContext('2d');
     const imageElement = document.getElementById('uploaded-image');
-
+  
     if (!context || !imageElement) {
       return;
     }
-
+  
     canvas.width = canvas.parentElement.clientWidth;
     canvas.height = canvas.parentElement.clientHeight;
-
+  
     // Clear canvas
     context.clearRect(0, 0, canvas.width, canvas.height);
-
+  
     // Draw image on canvas
     context.drawImage(
       imageElement,
@@ -77,38 +77,38 @@ const Uploadimg3 = () => {
       imageElement.width * scale,
       imageElement.height * scale
     );
-
+  
     const dpi = window.devicePixelRatio * 140;
     const lineGap = keyData?.widthUnCutKeys * dpi;
     const halfCanvasWidth = canvas.width / 2;
     const redLineGap = lineGap / 2;
-
+  
     context.beginPath();
     context.strokeStyle = 'red';
     context.lineWidth = 2;
-
+  
     const x1 = halfCanvasWidth - redLineGap;
     const x2 = halfCanvasWidth + redLineGap;
-
+  
     context.moveTo(x1, canvas.height * 0.1);
     context.lineTo(x1, canvas.height * 0.9);
     context.moveTo(x2, canvas.height * 0.1);
     context.lineTo(x2, canvas.height * 0.9);
-
+  
     context.stroke();
-
+  
     // Draw green lines horizontally from the red lines
     context.beginPath();
     context.strokeStyle = 'green';
     context.lineWidth = 2;
-
+  
     context.moveTo(x1, canvas.height * 0.1);
     context.lineTo(x1 - 20, canvas.height * 0.1); // Green line to the left of the first red line
     context.moveTo(x2, canvas.height * 0.1);
     context.lineTo(x2 + 20, canvas.height * 0.1); // Green line to the right of the second red line
-
+  
     context.stroke();
-
+  
     if (keyData) {
       let depths;
       if (keyData.hasVariant) {
@@ -118,35 +118,35 @@ const Uploadimg3 = () => {
         depths = keyData.Depth.split(',').map(d => parseInt(d, 10) * dpi / 1000);
       }
       const shoulders = shoulderDistance.map(d => parseInt(d, 10) * dpi / 1000);
-
-      context.strokeStyle = 'rgba(0, 0, 255, 0.5)';
+  
+      context.strokeStyle = 'rgba(0, 255, 0, 0.4)'; // Changed to green
       context.lineWidth = 1;
-
+  
       depths.forEach(depth => {
         const x = x1 + depth;
         context.moveTo(x, canvas.height * 0.1);
         context.lineTo(x, canvas.height * 0.9);
       });
-
+  
       shoulders.forEach(shoulder => {
         const y = shoulder + (canvas.height * 0.1);
         context.moveTo(0, y);
         context.lineTo(canvas.width * 0.8, y);
       });
-
+  
       context.stroke();
-
+  
       // Analyze intersections for biting points
       const markedLines = new Set();
       const newDetectedEdges = [];
-
+  
       context.strokeStyle = 'yellow';
       context.lineWidth = 2;
-
+  
       shoulders.forEach(shoulder => {
         let rightmostDepth = -Infinity;
         let rightmostDecoding = null;
-
+  
         depths.forEach(depth => {
           const x = x1 + depth;
           const y = shoulder + (canvas.height * 0.1);
@@ -183,11 +183,11 @@ const Uploadimg3 = () => {
           newDetectedEdges.push({ edge: y, decoding: rightmostDecoding });
         }
       });
-
+  
       setDetectedEdges(newDetectedEdges);
     }
   }, [shoulderDistance, keyData, imagePosition, scale]);
-
+  
   useEffect(() => {
     const animate = () => {
       drawLines();
