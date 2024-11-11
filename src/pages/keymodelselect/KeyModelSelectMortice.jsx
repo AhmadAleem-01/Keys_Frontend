@@ -8,13 +8,13 @@ import ImgDisplay from '../../assets/displayimg.svg'
 import axios from 'axios';
 
 
-const KeyModelSelect = () => {
+const KeyModelSelectMortice = () => {
     const [input,setInput] = useState("");
     const [variants, setVariants] = useState([]);
 
     useEffect(() => {
       const fetchData = async () => {
-        const response = await axios.get('https://keys-backend.vercel.app/getReferenceNumber');
+        const response = await axios.get('https://keys-backend.vercel.app/mortice/getReferenceNumber');
         const results = response.data.filter((variant) => {
           if (!input) {
             return true; // show all data if input is empty
@@ -65,4 +65,4 @@ const KeyModelSelect = () => {
   );
 };
 
-export default KeyModelSelect;
+export default KeyModelSelectMortice;

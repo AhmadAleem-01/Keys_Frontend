@@ -23,7 +23,7 @@ const Keyselect = () => {
 
         <div className='select-buttons'>
             <p>Select Keys</p>
-            <Link to='/keymodel' className='linking'><Button icon={Mortice} text="Mortice Key" onClick={()=>{}}/></Link>
+            <Link to='/keymodelmortice' className='linking'><Button icon={Mortice} text="Mortice Key" onClick={()=>{}}/></Link>
             <Link to='/keymodel' className='linking'><Button icon={Cylinderical} text="Cylinderical Key" onClick={()=>{}}/></Link>
         </div>
 

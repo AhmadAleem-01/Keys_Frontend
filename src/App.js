@@ -1,6 +1,7 @@
 import React from "react";
 import {
   KeySelect,
+  KeyModelMortice,
   GenerateImg,
   UploadImg,
   UploadImg2,
@@ -22,6 +23,7 @@ const App = () => {
           <Route path="/upimg2" element={<UploadImg2 />} />
           <Route path="/upimg3" element={<UploadImg3 />} />
           <Route path="/keymodel" element={<KeyModel />} />
+          <Route path="/keymodelmortice" element={<KeyModelMortice />} />
         </Routes>
       </BrowserRouter>
       <img src={Key} className="key-img" alt="key" />
